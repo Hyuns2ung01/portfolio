@@ -4,8 +4,8 @@ const session = require('express-session');
 const app = express();
 const port = 3000;
 
-const ADMIN_ID = '관리자 아이디';
-const ADMIN_PW = '관리자 비밀번호';
+const ADMIN_ID = '0711ohs';
+const ADMIN_PW = '22321089jh@@';
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -25,8 +25,8 @@ app.use((req, res, next) => {
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'PASSWORD',
-    database: 'database_name'
+    password: 'rootroot',
+    database: 'my_portfolio'
 });
 db.connect();
 
