@@ -4,6 +4,7 @@ const session = require('express-session');
 const app = express();
 const port = 3000;
 
+// 관리자 계정 설정
 const ADMIN_ID = '0711ohs';
 const ADMIN_PW = '22321089jh@@';
 
@@ -11,31 +12,42 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
+// 세션 설정
 app.use(session({
     secret: 'my_secret_key',
     resave: false,
     saveUninitialized: true
 }));
 
+// 로그인 여부 미들웨어
 app.use((req, res, next) => {
     res.locals.isLoggedIn = req.session.isLoggedIn || false;
     next();
 });
 
+// 데이터베이스 연결
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'portfolio',
     password: '1234',
     database: 'my_portfolio'
 });
-db.connect();
+
+db.connect((err) => {
+    if (err) {
+        console.error('DB 연결 실패:', err);
+    } else {
+        console.log('✅ MySQL 데이터베이스 연결 성공!');
+    }
+});
 
 // --- 라우터 시작 ---
 
-// 1. 메인 화면
+// 1. 메인 화면 (통계 포함)
 app.get('/', (req, res) => {
     db.query('SELECT * FROM projects ORDER BY id DESC', (err, results) => {
         if (err) {
+            console.error(err);
             res.render('index', { projects: [], stats: [] });
         } else {
             const totalProjects = results.length;
@@ -60,41 +72,44 @@ app.get('/', (req, res) => {
     });
 });
 
-// 2. 프로젝트 목록
+// [중요] 2. 프로젝트 목록 페이지 (이게 없어서 오류 났었음)
 app.get('/projects', (req, res) => {
     db.query('SELECT * FROM projects', (err, results) => {
-        res.render('projects', { projects: results });
+        if (err) {
+            console.error(err);
+            res.send('DB 오류');
+        } else {
+            res.render('projects', { projects: results });
+        }
     });
 });
 
-// 3. 로그인 페이지 보여주기
+// 3. 로그인 페이지
 app.get('/login', (req, res) => {
     res.render('login');
 });
 
-// 4. 로그인 처리 (POST)
+// 4. 로그인 처리
 app.post('/login', (req, res) => {
     const { id, pw } = req.body;
-
-    // 아이디 비번 확인
     if (id === ADMIN_ID && pw === ADMIN_PW) {
-        req.session.isLoggedIn = true; // 세션에 기록
+        req.session.isLoggedIn = true;
         req.session.save(() => {
-            res.redirect('/'); // 메인으로 이동
+            res.redirect('/');
         });
     } else {
         res.send('<script>alert("아이디 또는 비밀번호가 틀렸습니다."); history.back();</script>');
     }
 });
 
-// 5. 로그아웃 처리
+// 5. 로그아웃
 app.get('/logout', (req, res) => {
     req.session.destroy(() => {
         res.redirect('/');
     });
 });
 
-// 6. 글쓰기 화면 (로그인 안 했으면 쫓아내기)
+// 6. 글쓰기 화면
 app.get('/projects/write', (req, res) => {
     if (!req.session.isLoggedIn) {
         return res.send('<script>alert("관리자만 접근 가능합니다."); location.href="/login";</script>');
@@ -102,26 +117,11 @@ app.get('/projects/write', (req, res) => {
     res.render('project-write');
 });
 
-// 7. 글 저장
-app.post('/projects/write', (req, res) => {
-    if (!req.session.isLoggedIn) return res.send('권한 없음');
-
-    const { title, stack, desc } = req.body;
-    db.query('INSERT INTO projects (title, stack, description) VALUES (?, ?, ?)',
-        [title, stack, desc],
-        (err) => {
-            if (err) console.error(err);
-            res.redirect('/projects');
-        }
-    );
-});
-// ---------- 로그인 했을때 기능 ------------
-// 1. 수정 화면 보여주기
+// 7. 글 저장 (Github 주소 포함)
 app.post('/projects/write', (req, res) => {
     if (!req.session.isLoggedIn) return res.send('권한 없음');
 
     const { title, stack, desc, github } = req.body;
-
     db.query('INSERT INTO projects (title, stack, description, github_url) VALUES (?, ?, ?, ?)',
         [title, stack, desc, github],
         (err) => {
@@ -131,12 +131,24 @@ app.post('/projects/write', (req, res) => {
     );
 });
 
-// 2. 수정 요청 처리 (POST) - 깃허브 주소 포함
+// 8. 수정 화면
+app.get('/projects/edit/:id', (req, res) => {
+    if (!req.session.isLoggedIn) {
+        return res.send('<script>alert("관리자만 접근 가능합니다."); location.href="/login";</script>');
+    }
+    const projectId = req.params.id;
+    db.query('SELECT * FROM projects WHERE id = ?', [projectId], (err, results) => {
+        if (err) throw err;
+        if (results.length === 0) return res.send('프로젝트를 찾을 수 없습니다.');
+        res.render('project-edit', { project: results[0] });
+    });
+});
+
+// 9. 수정 처리
 app.post('/projects/edit/:id', (req, res) => {
     if (!req.session.isLoggedIn) return res.send('권한 없음');
-
     const projectId = req.params.id;
-    const { title, stack, desc, github } = req.body; // github 데이터 받기
+    const { title, stack, desc, github } = req.body;
 
     db.query('UPDATE projects SET title=?, stack=?, description=?, github_url=? WHERE id=?',
         [title, stack, desc, github, projectId],
@@ -147,20 +159,19 @@ app.post('/projects/edit/:id', (req, res) => {
     );
 });
 
-// 3. 삭제 요청 처리 (GET)
+// 10. 삭제 처리
 app.get('/projects/delete/:id', (req, res) => {
     if (!req.session.isLoggedIn) {
         return res.send('<script>alert("권한이 없습니다."); location.href="/login";</script>');
     }
-
     const projectId = req.params.id;
-
     db.query('DELETE FROM projects WHERE id = ?', [projectId], (err) => {
         if (err) console.error(err);
         res.redirect('/projects');
     });
 });
 
+// 서버 실행
 app.listen(port, () => {
     console.log(`서버가 http://localhost:${port} 에서 실행 중입니다.`);
 });
