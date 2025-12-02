@@ -117,20 +117,18 @@ app.post('/projects/write', (req, res) => {
 });
 // ---------- 로그인 했을때 기능 ------------
 // 1. 수정 화면 보여주기
-app.get('/projects/edit/:id', (req, res) => {
-    if (!req.session.isLoggedIn) {
-        return res.send('<script>alert("관리자만 접근 가능합니다."); location.href="/login";</script>');
-    }
+app.post('/projects/write', (req, res) => {
+    if (!req.session.isLoggedIn) return res.send('권한 없음');
 
-    const projectId = req.params.id;
+    const { title, stack, desc, github } = req.body;
 
-    db.query('SELECT * FROM projects WHERE id = ?', [projectId], (err, results) => {
-        if (err) throw err;
-        if (results.length === 0) return res.send('프로젝트를 찾을 수 없습니다.');
-
-        // 수정 화면으로 데이터 보냄
-        res.render('project-edit', { project: results[0] });
-    });
+    db.query('INSERT INTO projects (title, stack, description, github_url) VALUES (?, ?, ?, ?)',
+        [title, stack, desc, github],
+        (err) => {
+            if (err) console.error(err);
+            res.redirect('/projects');
+        }
+    );
 });
 
 // 2. 수정 요청 처리 (POST) - 깃허브 주소 포함
