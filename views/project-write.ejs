@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add New Project</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header>
+        <a href="/" class="logo">Hx2.Portfolio</a>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/projects">Projects</a>
+
+            <% if (isLoggedIn) { %>
+                <a href="/logout" style="color: var(--accent-deep); font-weight: bold;">Logout</a>
+                <% } else { %>
+                    <a href="/login">Login</a>
+                    <% } %>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="page-title-section">
+            <h1>Add New Project</h1>
+            <p>새로운 프로젝트 정보를 입력해주세요.</p>
+        </section>
+
+        <form action="/projects/write" method="POST" class="write-form">
+            <div class="card">
+                <div class="form-group">
+                    <label>프로젝트 제목</label>
+                    <input type="text" name="title" placeholder="예: 나만의 일정 관리 앱" required>
+                </div>
+
+                <div class="form-group">
+                    <label>사용 기술 (Stack) - 클릭하여 선택</label>
+
+                    <input type="hidden" name="stack" id="stackInput" required>
+
+                    <div class="stack-options">
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'Java')">Java</button>
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'Android')">Android</button>
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'Node.js')">Node.js</button>
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'Express')">Express</button>
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'MySQL')">MySQL</button>
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'C++')">C++</button>
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'Python')">Python</button>
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'React')">React</button>
+                        <button type="button" class="stack-btn"
+                            onclick="toggleStack(this, 'HTML/CSS')">HTML/CSS</button>
+                        <button type="button" class="stack-btn" onclick="toggleStack(this, 'AWS')">AWS</button>
+                    </div>
+                    <p class="selected-helper">선택된 기술: <span id="previewText"
+                            style="color:var(--accent-deep); font-weight:600;">없음</span></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Github Repository URL</label>
+                    <input type="url" name="github" placeholder="https://github.com/내아이디/내프로젝트"
+                        style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 12px;">
+                </div>
+
+                <div class="form-group">
+                    <label>설명 (Description)</label>
+                    <textarea name="desc" rows="5" placeholder="프로젝트에 대한 간단한 설명을 적어주세요." required></textarea>
+                </div>
+
+                <div class="form-buttons">
+                    <a href="/projects" class="btn-cancel">취소</a>
+                    <button type="submit" class="btn-accent">등록하기</button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        let selectedStacks = [];
+
+        function toggleStack(btn, techName) {
+            // 1. 버튼 디자인 토글 (회색 <-> 파란색)
+            btn.classList.toggle('active');
+
+            // 2. 배열에 추가하거나 삭제
+            if (selectedStacks.includes(techName)) {
+                selectedStacks = selectedStacks.filter(item => item !== techName);
+            } else {
+                selectedStacks.push(techName);
+            }
+
+            document.getElementById('stackInput').value = selectedStacks.join(', ');
+
+            const preview = document.getElementById('previewText');
+            preview.innerText = selectedStacks.length > 0 ? selectedStacks.join(', ') : "없음";
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Projects</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header>
+        <a href="/" class="logo">Hx2.Portfolio</a>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/projects">Projects</a>
+
+            <% if (isLoggedIn) { %>
+                <a href="/logout" style="color: var(--accent-deep); font-weight: bold;">Logout</a>
+                <% } else { %>
+                    <a href="/login">Login</a>
+                    <% } %>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="page-title-section">
+            <h1>My Project Archive</h1>
+            <p>지금까지 진행한 프로젝트들을 모아둔 공간입니다.</p>
+        </section>
+
+        <section class="project-grid">
+
+            <% projects.forEach(function(item) { %>
+                <div class="card project-card" style="cursor: pointer;"
+                    ondblclick="if('<%= item.github_url %>') { window.open('<%= item.github_url %>', '_blank'); } else { alert('등록된 깃허브 주소가 없습니다.'); }">
+                    <div class="card-header">
+                        <h3>
+                            <%= item.title %>
+                        </h3>
+                        <span class="badge">
+                            <%= item.stack ? item.stack.split(',')[0] : 'Etc' %>
+                        </span>
+                    </div>
+
+                    <div class="project-preview blue-gradient">
+                        <span>
+                            <%= item.stack ? item.stack : 'No Stack' %>
+                        </span>
+                    </div>
+
+                    <div class="project-desc">
+                        <p>
+                            <%= item.description %>
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+
+                            <% if (isLoggedIn) { %>
+                                <div class="admin-controls">
+                                    <a href="/projects/edit/<%= item.id %>" class="btn-edit">수정</a>
+                                    <a href="/projects/delete/<%= item.id %>" class="btn-delete"
+                                        onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                                </div>
+                                <% } %>
+                        </div>
+                    </div>
+                </div>
+                <% }); %>
+
+                    <% if (isLoggedIn) { %>
+                        <a href="/projects/write" class="card project-card add-new" style="text-decoration: none;">
+                            <div class="add-icon">+</div>
+                            <p>New Project</p>
+                        </a>
+                        <% } %>
+
+        </section>
+    </main>
+</body>
+
+</html>

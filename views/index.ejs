@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header>
+        <a href="/" class="logo">Hx2.Portfolio</a>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/projects">Projects</a>
+
+            <% if (isLoggedIn) { %>
+                <a href="/logout" style="color: var(--accent-deep); font-weight: bold;">Logout</a>
+                <% } else { %>
+                    <a href="/login">Login</a>
+                    <% } %>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero-section">
+            <div class="hero-text">
+                <h1>Backend<br>Developer</h1>
+                <p>
+                    <strong>Java</strong>와 <strong>Node.js</strong>를 주력으로 하는 개발자입니다.<br>
+                    안정적인 서버 구축과 직관적인 <strong>웹</strong> 경험을 만듭니다.<br>
+                    현재 <strong>새로운 서비스를 기획 및 개발</strong>하고 있습니다.
+                </p>
+            </div>
+
+            <div class="card main-dashboard-card">
+                <div class="card-header">
+                    <h3>Featured Project</h3>
+                </div>
+
+                <div class="fake-wave-chart">
+                    <div class="scrollable-project-list">
+                        <% if (projects.length===0) { %>
+                            <div class="empty-state">
+                                <p>등록된 프로젝트가 없습니다.</p>
+                                <a href="/projects/write" class="btn-small">첫 프로젝트 등록하기 +</a>
+                            </div>
+                            <% } else { %>
+                                <% projects.forEach(function(item) { %>
+                                    <div class="mini-project-item" style="cursor: pointer;"
+                                        ondblclick="if('<%= item.github_url %>') { window.open('<%= item.github_url %>', '_blank'); } else { alert('등록된 깃허브 주소가 없습니다.'); }">
+                                        <div class="mini-info">
+                                            <h4>
+                                                <%= item.title %>
+                                            </h4>
+                                            <span class="mini-desc">
+                                                <%= item.description.substring(0, 30) %>...
+                                            </span>
+                                        </div>
+                                        <span class="mini-badge">
+                                            <%= item.stack.split(',')[0] %>
+                                        </span>
+                                    </div>
+                                    <% }); %>
+                                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bottom-section">
+            <div class="card bottom-card">
+                <div class="card-header-simple">
+                    <span>Tech Stacks</span>
+                    <span>🛠️</span>
+                </div>
+                <div class="skill-list">
+                    <% if (stats.length===0) { %>
+                        <p style="color: #888; text-align: center; width: 100%;">아직 등록된 기술이 없습니다.</p>
+                        <% } else { %>
+
+                            <% stats.forEach(function(item) { %>
+                                <div class="skill-item">
+                                    <div class="skill-info">
+                                        <span>
+                                            <%= item.name %>
+                                        </span>
+                                        <span>
+                                            <%= item.percent %>%
+                                        </span>
+                                    </div>
+                                    <div class="progress-bg">
+                                        <div class="progress-bar" style="width: <%= item.percent %>%"></div>
+                                    </div>
+                                </div>
+                                <% }); %>
+
+                                    <% } %>
+                </div>
+            </div>
+
+            <div class="card bottom-card">
+                <div class="card-header-simple">
+                    <span>Profile</span>
+                    <span>📃</span>
+                </div>
+                <div class="contact-area">
+                    <p class="contact-text">
+                        협업 제안이나 프로젝트 문의는<br>언제든 환영합니다.
+                    </p>
+                    <div class="link-box">
+                        <a href="https://github.com/hyuns2ung01" target="_blank" rel="noopener noreferrer">Github
+                            Profile -></a>
+                    </div>
+                    <div class="link-box">
+                        <a href="#" onclick="openModal(event)">Email Me -></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="emailModal" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h3>📬 Contact Info</h3>
+            <div class="info-group">
+                <p class="modal-label"><strong>Email Address</strong></p>
+                <p class="info-content">0711ohs@naver.com</p>
+            </div>
+            <button class="btn-accent" onclick="closeModal()" style="margin-top: 10px;">닫기</button>
+        </div>
+    </div>
+
+    <script>
+        function openModal(e) {
+            e.preventDefault();
+            document.getElementById('emailModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('emailModal').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
